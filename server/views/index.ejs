@@ -1,0 +1,11 @@
+
+  <div>
+    <h1>HELLO <%= username %></h1>
+    <p id="test"></p>
+  </div>
+  <form action="/logout?_method=DELETE" method="POST">
+    <button type="submit">Log Out</button>
+  </form>
+  <script src="/socket.io/socket.io.js" ></script>
+  <script src="client.js" ></script>
+
