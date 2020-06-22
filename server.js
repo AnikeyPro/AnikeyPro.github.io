@@ -11,16 +11,34 @@ const flash = require('express-flash');
 const session = require('express-session');
 const methodOverride = require('method-override');
 
-const users = [];
+//подклбчаем бд
+const sqlite3 = require('sqlite3').verbose();
+const dbFile = 'userdata.db';
+const fs = require("fs");
+const exists = fs.existsSync(dbFile);
+var db = new sqlite3.Database(dbFile);
+
+db.serialize(() => {
+  console.log(exists);
+  if (!exists) {
+    db.run(
+      "CREATE TABLE Users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)"
+    );
+  } else {
+    console.log('Database ready to go!');
+    
+  }
+});
+
+
+//список онлайн
+const usersOnline = [];
 
 //работаем с авторизацией через passport
 const passport = require('passport');
 const initializePassport = require('./passport-config')
-initializePassport(
-    passport,
-    username => users.find(user => user.username === username),
-    id => users.find(user => user.id === id)
-);
+initializePassport(passport,db);
+
 
 
 //для шифровки паролей использую bcrypt
@@ -29,6 +47,7 @@ const bcrypt = require('bcrypt');
 //применеяем ejs 
 app.set('view-engine','ejs');
 app.use(express.urlencoded({ extended: false}));
+app.use(express.static(__dirname + '/client'));
 app.use(flash());
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -62,12 +81,9 @@ app.get('/register', checkNotAuthenticated, (req,res) => {
 app.post('/register', checkNotAuthenticated, async (req,res) => {
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        users.push({
-            id: Date.now().toString(),
-            username: req.body.username,
-            password: hashedPassword
-        });
-        console.log(users);
+        const clearUsername = cleanseString(req.body.username);
+        console.log(hashedPassword,clearUsername);  
+        db.run(`INSERT INTO Users (username, password) VALUES ("${clearUsername}","${hashedPassword}")`);
         res.redirect('/login');
     } catch  {
         res.redirect('/register');
@@ -87,24 +103,22 @@ function checkAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
       return next()
     }
-  
     res.redirect('/login')
   }
   
   function checkNotAuthenticated(req, res, next) {
-
-    console.log('Ну пипец');
     if (req.isAuthenticated()) {
-    console.log('Ну пипец3');
       return res.redirect('/')
     }
-    
-    console.log('Ну пипец2');
     next()
   }
 
 
-
+//очистка строки от спецсимволов
+  const cleanseString = function(string) {
+    return string.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  };
+  
 
 
 

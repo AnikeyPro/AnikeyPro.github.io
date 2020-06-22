@@ -1,11 +1,15 @@
-
-  <div>
-    <h1>HELLO <%= username %></h1>
+<%- include('header'); -%>
+<body>
+  <div class="wrapper">
+    <h1>Greetings, <%= username %>!</h1>
     <p id="test"></p>
+    <form action="/logout?_method=DELETE" method="POST">
+      <button type="submit">Log Out</button>
+    </form>
   </div>
-  <form action="/logout?_method=DELETE" method="POST">
-    <button type="submit">Log Out</button>
-  </form>
+  
+  <script src="/jquery/dist/jquery.js" ></script>
   <script src="/socket.io/socket.io.js" ></script>
   <script src="client.js" ></script>
-
+</body>
+</html>
