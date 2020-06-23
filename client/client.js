@@ -1,5 +1,3 @@
-//конектимся к серверу
-const sock = io({ transports: ['websocket'], upgrade: false });
 
 const app = new Vue({
     el: '#app',
@@ -24,6 +22,8 @@ const app = new Vue({
     }
 
 });
+//конектимся к серверу
+const sock = io({ transports: ['websocket'], upgrade: false });
 
 
 sock.on("connect", () => {
