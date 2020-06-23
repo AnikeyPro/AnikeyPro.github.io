@@ -1,3 +1,5 @@
+//конектимся к серверу
+const sock = io({ transports: ['websocket'], upgrade: false });
 
 const app = new Vue({
     el: '#app',
@@ -14,16 +16,14 @@ const app = new Vue({
         },
         sendInv: function (target) {
             const sender = $('#username').text();
-            console.log([target,sender]);
+            console.log([target, sender]);
             //отправляем приглос
-            sock.emit('sendRequest', [target,sender]);
+            sock.emit('sendRequest', [target, sender]);
 
         }
     }
 
 });
-//конектимся к серверу
-const sock = io({ transports: ['websocket'], upgrade: false });
 
 
 sock.on("connect", () => {
@@ -48,7 +48,7 @@ sock.on("connect", () => {
     sock.on('invitation', (arr) => {
         console.log(arr[0] + 'priglos');
         if (arr[0] === user) {
-            alert("You are invited to play by  "+ arr[1]);
+            alert("You are invited to play by  " + arr[1]);
         }
     });
 
