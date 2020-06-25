@@ -2,11 +2,16 @@
 
 <body>
   <div id='app'>
+    <div class="invitation" v-if ='showInv' v-cloak> 
+      <span>{{ opponent }} has challenged you to a duel!</span>
+      <button id='accept'>Accept</button>
+      <button id='decline' @click='declineInv'>Decline</button>
+    </div>
     <div class="wrapper">
-      <h1>Greetings, <span id='username'><%= username %></span>!</h1>
+      <h1>Greetings, <span id='username' ><%=username %></span>!</h1>
       <div id="content"></div>
       <ul><b> Players Online : </b>
-        <li v-for="user in users">{{ user }}<span v-on:click="sendInv(user)" id='target'> PvP</span></li>
+        <li v-for="userOnline in usersOnline" v-cloak>{{ userOnline }}<span v-on:click="sendInv(userOnline)" id='target'> PvP</span></li>
       </ul>
       <form action="/logout?_method=DELETE" method="POST">
         <button type="submit">Log Out</button>
@@ -15,10 +20,7 @@
 
     <%- include('game'); -%>
   </div>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="client.js"></script>
-
-
 </body>
-
+<script src="/socket.io/socket.io.js"></script>
+<script src="client.js"></script>
 </html>

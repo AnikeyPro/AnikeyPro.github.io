@@ -2,10 +2,11 @@
 
 <body>
   <div class="wrapper">
+    <span class="registered" ></span>
     <h1>Login</h1>
-    <% if (messages.error) { %>
+    <span class="error"><% if (messages.error) { %>
     <%= messages.error %>
-    <% } %>
+    <% } %></span>
     <form action="/login" method="POST">
       <div>
         <label for="username">Username</label>
@@ -20,3 +21,19 @@
     <a href="/register">Register</a>
   </div>
 </body>
+<script>
+    var tmp = [];
+    var result = '';
+    $('.registered').hide();
+    window.location.search.substr(1).split("&")
+        .forEach(function (item) {
+          tmp = item.split("=");
+          if (tmp[0] === 'registered')
+              result = true;
+        });
+    if(result){
+      
+      $('.registered').show();
+      $('.registered').text('Registration succesfull. You can now log in!');
+    }
+</script>

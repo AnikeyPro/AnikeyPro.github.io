@@ -5,6 +5,10 @@ body {
     padding: 0;
 }
 
+[v-cloak] { 
+  display: none; 
+}
+
 p{
   display:flex;
   flex-direction:column;
@@ -18,6 +22,7 @@ h1{
   flex-direction: row;
   justify-content:center;
   align-items:center;
+  margin:15px auto 8px;
 }
 
 form{
@@ -38,7 +43,7 @@ form input{
   flex-direction:column;
   justify-content:space-between;
   align-items:center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   margin-top: 5px;
 }
 
@@ -71,9 +76,9 @@ ul{
 ul li{
   margin: 4px 10px;
   padding: 10px 20px;
-list-style-type:none;
-border: 1px solid #00bcd4;
-    box-shadow: rgba(0, 0, 0, 0.12) 0 1px 6px, rgba(0, 0, 0, 0.12) 0 1px 4px;
+  list-style-type:none;
+  border: 1px solid #00bcd4;
+  box-shadow: rgba(0, 0, 0, 0.12) 0 1px 6px, rgba(0, 0, 0, 0.12) 0 1px 4px;
 }
 
 
@@ -81,7 +86,7 @@ button {
     width: 180px;
     text-transform: uppercase;
     font-size: 0.8rem;
-    padding: 3px 15px;
+    padding: px 15px;
     color: white;
     line-height: 25px;
     background-color: #00bcd4;
@@ -128,6 +133,57 @@ a:hover:before, a:hover:after{
   width: 100%;
 }
 
+.error{
+  color:red;
+  display:inline;
+  text-align:center;
+  padding-bottom:10px;
+}
+.registered{
+    background-color: rgba(181, 196, 197, 0.28);
+    margin: 20px auto 0px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-content: center;
+    align-items:center;
+    border: 1px solid  lightgrey;
+    padding: 22px;
+
+}
+.invitation{
+    background-color: rgba(181, 196, 197, 0.28);
+    margin: 20px auto 0px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+    align-items:center;
+    border: 1px solid  lightgrey;
+    padding: 22px;
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    -o-transition: all 1s ease;
+     transition: all 1s ease;
+}
+
+.invitation>button{
+  margin:auto 20px;
+}
+.invitation>span{
+  margin:auto 20px;
+  font-weight: bold;
+}
+
+#accept{
+ background-color: #47cc59;
+}
+#decline{
+ background-color: #b53948;
+}
+
 .game{
     background-color: rgba(181, 196, 197, 0.28);
     margin: 20px auto;
@@ -170,7 +226,7 @@ transform: scale(1.3);
 }
 
 #target{
-  color:#ff0000b0
+  color:#ff0000b0;
   flex-direction:column;
   justify-content:center;
   text-align:center;
@@ -187,4 +243,11 @@ transform: scale(1.3);
 
 #target:hover{
   cursor:pointer
+}
+
+
+
+
+[v-cloak] { 
+  display: none; 
 }
