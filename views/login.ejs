@@ -7,7 +7,7 @@
     <span class="error"><% if (messages.error) { %>
     <%= messages.error %>
     <% } %></span>
-    <form action="/login" method="POST">
+    <form action="/login" method="POST" class='formDef'>
       <div>
         <label for="username">Username</label>
         <input type="text" id="username" name="username" required>
@@ -16,7 +16,7 @@
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required>
       </div>
-      <button type="submit" v-on:click="login">Login</button>
+      <button type="submit" >Login</button>
     </form>
     <a href="/register">Register</a>
   </div>

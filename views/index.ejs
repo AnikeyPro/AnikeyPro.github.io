@@ -2,25 +2,34 @@
 
 <body>
   <div id='app'>
-    <div class="invitation" v-if ='showInv' v-cloak> 
-      <span>{{ opponent }} has challenged you to a duel!</span>
-      <button id='accept'>Accept</button>
-      <button id='decline' @click='declineInv'>Decline</button>
-    </div>
-    <div class="wrapper">
-      <h1>Greetings, <span id='username' ><%=username %></span>!</h1>
+    <transition name="slide-fade">
+      <form action="/room" name='toRoom' id="toRoom" method="POST">
+        <div class="invitation" v-if='showInv' v-cloak>
+          <span>{{ opponent }} has challenged you to a duel!</span>
+          <button type="button" id='accept' @click='startGame'>Accept</button>
+          <button type="button" id='decline' @click='declineInv'>Decline</button>
+        </div>
+      </form>
+    </transition>
+    <div class="wrapper" v-if='!gameOn'>
+      <h1>Greetings,<span id='username'><%=username %></span>!</h1>
       <div id="content"></div>
       <ul><b> Players Online : </b>
-        <li v-for="userOnline in usersOnline" v-cloak>{{ userOnline }}<span v-on:click="sendInv(userOnline)" id='target'> PvP</span></li>
+        <li v-for="userOnline in usersOnline" v-cloak v-if='user!=userOnline'><span class='ready'>ready
+          </span><b>{{ userOnline }}</b><span @click="sendInv(userOnline)" id='target'> PvP</span></li>
       </ul>
-      <form action="/logout?_method=DELETE" method="POST">
+      <form class='formDef' action="/logout?_method=DELETE" method="POST">
         <button type="submit">Log Out</button>
       </form>
     </div>
 
-    <%- include('game'); -%>
+    <%- include('room'); -%>
   </div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
-<script src="client.js"></script>
+<script>
+  const userName = <%= username %>;
+</script>
+<script src="scripts/client.js"></script>
+
 </html>
