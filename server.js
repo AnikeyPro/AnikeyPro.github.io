@@ -15,7 +15,7 @@ const methodOverride = require('method-override');
 
 
 //наш класс игры
-const game = require('./gameLogic');
+const Game = require('./gameLogic');
 
 //подключаем бд
 const sqlite3 = require('sqlite3').verbose();
@@ -68,9 +68,12 @@ var username = null;
 //статусы
 const statuses = {};
 
+//игроки для класса Game
+let player1 = null;
+let player2 = null;
 
 //комнаты
-const rooms = { }
+const rooms = {}
 
 
 app.get('/', checkAuthenticated, (req, res) => {
@@ -108,9 +111,10 @@ app.post('/register', checkNotAuthenticated, async (req, res) => {
 app.delete('/logout', (req, res) => {
   req.logOut()
   req.session.destroy(function (err) {
-    res.redirect('/login'); 
+    res.redirect('/login');
   });
 })
+
 
 
 // проверяем на коннект с клиентом
@@ -124,10 +128,10 @@ io.on('connection', (socket) => {
   //отправляем логин
   if (username != null) {
     if (!Object.values(usersOnline).find(name => name === username)) { usersOnline[socket.id] = username; }
-    console.log('i\'m still online ' + usersOnline[socket.id] + "sock "+ socket.id)
+    console.log('i\'m still online ' + usersOnline[socket.id] + "sock " + socket.id)
     console.log('all users are  ' + Object.values(usersOnline))
     //присваеваем статус готов к игре
-    if(usersOnline[socket.id]){
+    if (usersOnline[socket.id]) {
       statuses[usersOnline[socket.id]] = 'ready';
     }
     socket.emit('statuse-update', statuses);
@@ -151,47 +155,55 @@ io.on('connection', (socket) => {
 
   //если согласился->создаем комнату для игры
   socket.on('agreed-to-play', (players) => {
-    console.log('username' + username + ' = ' + players.from +' agreed to play with ' + players.to);
+    console.log('username' + username + ' = ' + players.from + ' agreed to play with ' + players.to);
     if (players.from === usersOnline[socket.id]) {
       //обновляем статус на "в игре"
       statuses[usersOnline[socket.id]] = 'playing';
       socket.emit('statuse-update', statuses);
       socket.broadcast.emit('statuse-update', statuses);
 
-      var room =  players.from + '&' + players.to;
-      console.log(players.from + 'user to room  ' + room);
+      var room = players.from + '&' + players.to;
       socket.broadcast.emit('lets-play', players, room);
       rooms[room] = { users: {} }
       rooms[room].users[socket.id] = usersOnline[socket.id];
       socket.join(room);
+
+      console.log(players.from + " sid " + socket.id + ' user joins to room  ' + room);
+      player2 = socket;
     }
   });
 
   //коннектим пригласившего к комнате 
-  socket.on('connect-me-too', (room,username) => {
+  socket.on('connect-me-too', (room, username) => {
     if (username === usersOnline[socket.id]) {
       //обновляем статус на "в игре"
       statuses[usersOnline[socket.id]] = 'playing';
       socket.emit('statuse-update', statuses);
       socket.broadcast.emit('statuse-update', statuses);
 
-      console.log(username +' user to room ' + room);
+      console.log(username + " sid " + socket.id + ' user joins to room  ' + room);
       rooms[room].users[socket.id] = usersOnline[socket.id];
       socket.join(room);
+
+      player1 = socket;
+      //подключаем gamelogic
+      new Game(player1, player2,room);
+      player1 = null;
+      player2 = null;
     }
   });
-  
+
 
   //чат
-  socket.on('message', (room,message) => {
+  socket.on('message', (room, message) => {
     console.log(JSON.stringify(socket.adapter.rooms) + 'aaa');
     //console.log('users in room' + Object.entries(rooms[room].users));
     socket.to(room).broadcast.emit('message', message);
   })
 
 
-   //логаут - убираем из списка онлайн 
-   socket.on('disconnect', (reason) => {
+  //логаут - убираем из списка онлайн 
+  socket.on('disconnect', (reason) => {
     console.log('reason ' + reason);
     console.log('i\'m loggin out ' + usersOnline[socket.id])
     delete usersOnline[socket.id];
@@ -203,7 +215,7 @@ io.on('connection', (socket) => {
     //   console.log('deleting room ' + room);
     //   delete rooms[room];
     // })
-    
+
     socket.broadcast.emit('statuse-update', statuses);
     socket.broadcast.emit('users-online', Object.values(usersOnline));
     console.log('users after logout  ' + Object.values(usersOnline))

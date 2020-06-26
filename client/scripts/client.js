@@ -49,6 +49,10 @@ const app = new Vue({
             this.messages.push('You : ' + this.msg);
             socket.emit('message', this.roomName, this.user + " : " + this.msg);
             this.msg = '';
+        },
+        turn: function (event) {
+            console.log("Clicked" + event.currentTarget.id)
+            socket.emit('turn', event.currentTarget.id);
         }
 
     },
@@ -114,26 +118,7 @@ socket.on("connect", () => {
 
 
 
-//сама игруля
-$(document).ready(function () {
 
-
-    //обработчик игры - смотрим что нажал игрок
-    const addButtonListeners = () => {
-        ['rock', 'paper', 'scissors', 'lizard', 'spok'].forEach((id) => {
-            const button = document.getElementById(id);
-            button.addEventListener('click', () => {
-                console.log("Clicked" + id)
-                socket.emit('turn', id);
-            });
-        });
-    };
-
-    addButtonListeners();
-
-
-
-});
 
 
 

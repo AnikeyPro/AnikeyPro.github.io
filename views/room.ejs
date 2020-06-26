@@ -18,11 +18,11 @@
         </div>
     </div>
     <div class='game'>
-        <img src="img/rock.png" alt="rock" height="150px" width='150px' class="turn" id='rock'>
-        <img src="img/scissors.png" alt="scissors" height="150px" width='150px' class="turn" id='scissors'>
-        <img src="img/paper.png" alt="paper" height="150px" width='150px' class="turn" id='paper'>
-        <img src="img/lizard.png" alt="lizard" height="150px" width='150px' class="turn" id='lizard'>
-        <img src="img/spok.png" alt="spok" height="150px" width='150px' class="turn" id='spok'>
+        <img src="img/rock.png" @click="turn($event)" alt="rock" height="150px" width='150px' class="turn" id='rock'>
+        <img src="img/scissors.png" @click="turn($event)" alt="scissors" height="150px" width='150px' class="turn" id='scissors'>
+        <img src="img/paper.png" @click="turn($event)" alt="paper" height="150px" width='150px' class="turn" id='paper'>
+        <img src="img/lizard.png" @click="turn($event)" alt="lizard" height="150px" width='150px' class="turn" id='lizard'>
+        <img src="img/spok.png" @click="turn($event)" alt="spok" height="150px" width='150px' class="turn" id='spok'>
     </div>
     <div class='chat'>
         <div class="chat-form-cont">
