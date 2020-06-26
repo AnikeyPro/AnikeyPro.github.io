@@ -65,6 +65,10 @@ app.use(methodOverride('_method'));
 const usersOnline = {};
 var username = null;
 
+//статусы
+const statuses = {};
+
+
 //комнаты
 const rooms = { }
 
@@ -117,55 +121,46 @@ io.on('connection', (socket) => {
   //     sock.disconnect();
   // }, 10000);
 
-
-
-
   //отправляем логин
   if (username != null) {
     if (!Object.values(usersOnline).find(name => name === username)) { usersOnline[socket.id] = username; }
     console.log('i\'m still online ' + usersOnline[socket.id] + "sock "+ socket.id)
     console.log('all users are  ' + Object.values(usersOnline))
-
+    //присваеваем статус готов к игре
+    if(usersOnline[socket.id]){
+      statuses[usersOnline[socket.id]] = 'ready';
+    }
+    socket.emit('statuse-update', statuses);
+    socket.broadcast.emit('statuse-update', statuses);
+    console.log('statuses  are' + JSON.stringify(statuses))
     //отправляем список юзеров онлайн
     socket.emit('users-online', Object.values(usersOnline));
     socket.broadcast.emit('users-online', Object.values(usersOnline));
   }
 
-
-  //логаут - убираем из списка онлайн 
-  socket.on('disconnect', (reason) => {
-    console.log('reason ' + reason);
-    console.log('i\'m loggin out ' + usersOnline[socket.id])
-    delete usersOnline[socket.id];
-    // getUserRooms(socket).forEach(room => {
-    //   console.log('puk ' + room);
-    //   socket.to(room).broadcast.emit('user-disconnected', rooms[room].users[socket.id])
-    //   console.log('deleting room ' + room);
-    //   delete rooms[room];
-    // })
-    socket.broadcast.emit('users-online', Object.values(usersOnline));
-    console.log('users after logout  ' + Object.values(usersOnline))
-  });
-
-
   // перенаправляем приглос
-  socket.on('send-request', (req) => {
+  socket.on('send-request', (players) => {
     console.log('username' + username);
-    console.log(req.from + ' sends to ' + req.to);
-    console.log(req.to + ' emmit ' + username);
-    if (req.from === usersOnline[socket.id]) {
-      socket.broadcast.emit('invitation', req);
+    console.log(players.from + ' sends to ' + players.to);
+    console.log(players.to + ' emmit ' + username);
+    if (players.from === usersOnline[socket.id]) {
+      socket.broadcast.emit('invitation', players);
     }
 
   });
 
   //если согласился->создаем комнату для игры
-  socket.on('agreed-to-play', (req) => {
-    console.log('username' + username + ' = ' + req.from +' agreed to play with ' + req.to);
-    if (req.from === usersOnline[socket.id]) {
-      var room =  req.from + '&' + req.to;
-      console.log(req.from + 'user to room  ' + room);
-      socket.broadcast.emit('lets-play', req, room);
+  socket.on('agreed-to-play', (players) => {
+    console.log('username' + username + ' = ' + players.from +' agreed to play with ' + players.to);
+    if (players.from === usersOnline[socket.id]) {
+      //обновляем статус на "в игре"
+      statuses[usersOnline[socket.id]] = 'playing';
+      socket.emit('statuse-update', statuses);
+      socket.broadcast.emit('statuse-update', statuses);
+
+      var room =  players.from + '&' + players.to;
+      console.log(players.from + 'user to room  ' + room);
+      socket.broadcast.emit('lets-play', players, room);
       rooms[room] = { users: {} }
       rooms[room].users[socket.id] = usersOnline[socket.id];
       socket.join(room);
@@ -175,7 +170,11 @@ io.on('connection', (socket) => {
   //коннектим пригласившего к комнате 
   socket.on('connect-me-too', (room,username) => {
     if (username === usersOnline[socket.id]) {
-      
+      //обновляем статус на "в игре"
+      statuses[usersOnline[socket.id]] = 'playing';
+      socket.emit('statuse-update', statuses);
+      socket.broadcast.emit('statuse-update', statuses);
+
       console.log(username +' user to room ' + room);
       rooms[room].users[socket.id] = usersOnline[socket.id];
       socket.join(room);
@@ -189,6 +188,27 @@ io.on('connection', (socket) => {
     //console.log('users in room' + Object.entries(rooms[room].users));
     socket.to(room).broadcast.emit('message', message);
   })
+
+
+   //логаут - убираем из списка онлайн 
+   socket.on('disconnect', (reason) => {
+    console.log('reason ' + reason);
+    console.log('i\'m loggin out ' + usersOnline[socket.id])
+    delete usersOnline[socket.id];
+    delete statuses[usersOnline[socket.id]];
+
+    // getUserRooms(socket).forEach(room => {
+    //   console.log('puk ' + room);
+    //   socket.to(room).broadcast.emit('user-disconnected', rooms[room].users[socket.id])
+    //   console.log('deleting room ' + room);
+    //   delete rooms[room];
+    // })
+    
+    socket.broadcast.emit('statuse-update', statuses);
+    socket.broadcast.emit('users-online', Object.values(usersOnline));
+    console.log('users after logout  ' + Object.values(usersOnline))
+  });
+
 
 
   var today = new Date();

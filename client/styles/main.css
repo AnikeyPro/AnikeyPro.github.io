@@ -291,9 +291,6 @@ transform: scale(1.3);
   cursor:pointer
 }
 
-.ready{
-  color:#00c100;
-}
 
 [v-cloak] { 
   display: none; 
@@ -326,4 +323,12 @@ ul.chat-messages{
   display:flex; 
   flex-direction: column-reverse;
   align-items: flex-start;
+}
+
+.status-ready{
+  color:#00c100;
+}
+
+.status-playing{
+  color: #a50000db;
 }

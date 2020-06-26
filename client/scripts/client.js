@@ -8,7 +8,9 @@ const app = new Vue({
         showInv: false,
         roomName: '',
         gameOn: false,
-        msg:''
+        msg: '',
+        statuses: {},
+        isPVPdisabled: false
     },
     methods: {
         resetUsers: function (arr) {
@@ -16,8 +18,8 @@ const app = new Vue({
         },
         sendInv: function (target) {
             console.log(this.user, target);
-            this.roomName = target + '&' + this.user  ;
-            //отправляем приглос
+            this.roomName = target + '&' + this.user;
+            //отправляем приглашение
             this.opponent = target;
             socket.emit('send-request', { 'from': this.user, 'to': target, });
         },
@@ -32,7 +34,7 @@ const app = new Vue({
         startGame: function () {
             this.gameOn = true;
             localStorage.gameOn = true;
-            if (this.showInv){
+            if (this.showInv) {
                 this.showInv = false;
                 socket.emit('agreed-to-play', { 'from': this.user, 'to': this.opponent });
             }
@@ -42,7 +44,7 @@ const app = new Vue({
             this.gameOn = false;
             localStorage.gameOn = false;
         },
-        sendToChat: function (e){
+        sendToChat: function (e) {
             e.preventDefault();
             this.messages.push('You : ' + this.msg);
             socket.emit('message', this.roomName, this.user + " : " + this.msg);
@@ -51,41 +53,53 @@ const app = new Vue({
 
     },
     mounted() {
-      if (localStorage.gameOn) {
-        this.gameOn = JSON.parse(localStorage.gameOn);
-      }
+        if (localStorage.gameOn) {
+            this.gameOn = JSON.parse(localStorage.gameOn);
+        }
     }
 
 });
+
 //конектимся к серверу
 const socket = io.connect();
 
 socket.on("connect", () => {
     console.log('connected!');
 
-    //юзеры - онлайн
-    socket.on('users-online', (usersOnline) => {
-        app.resetUsers(usersOnline);
-    });
+    //если в режиме меню
+    if (!app.gameOn) {
+        //юзеры - онлайн
+        socket.on('users-online', (usersOnline) => {
+            app.resetUsers(usersOnline);
+        });
 
-    //получаем приглос
-    socket.on('invitation', (req) => {
-        console.log(req.from + ' kinul priglos' + app.user);
-        app.opponent = req.from;
-        if (req.to === app.user) {
-            app.createInvitation(req.from);
-        }
-    });
+        //получаем приглошение
+        socket.on('invitation', (players) => {
+            console.log(players.from + ' kinul priglos' + app.user);
+            app.opponent = players.from;
+            if (players.to === app.user) {
+                app.createInvitation(players.from);
+            }
+        });
 
+        //получаем согласие от оппонента
+        socket.on('lets-play', (players, room) => {
+            console.log(players.from + ' agreed lets play' + app.user);
+            if (players.to === app.user) {
+                app.startGame();
+                socket.emit('connect-me-too', room, app.user);
+            }
+        });
+    }
+    //если в игре 
+    //получаем сообщения с чата
     socket.on('message', (msg) => {
         app.messages.push(msg);
     });
-    socket.on('lets-play', (req, room) => {
-        console.log(req.from + ' agreed lets play' + app.user);
-        if (req.to === app.user) {
-            app.startGame();
-            socket.emit('connect-me-too', room, app.user);
-        }
+
+    //обновляем статусы
+    socket.on('statuse-update', (statuses) => {
+        app.statuses = statuses;
     });
 
 
@@ -100,26 +114,26 @@ socket.on("connect", () => {
 
 
 
-
-// $(document).ready(function () {
-
-
-//     //обработчик игры 
-//     const addButtonListeners = () => {
-//         ['rock', 'paper', 'scissors', 'lizard', 'spok'].forEach((id) => {
-//             const button = document.getElementById(id);
-//             button.addEventListener('click', () => {
-//                 console.log("Clicked" + id)
-//                 socket.emit('turn', id);
-//             });
-//         });
-//     };
-
-//     addButtonListeners();
+//сама игруля
+$(document).ready(function () {
 
 
+    //обработчик игры - смотрим что нажал игрок
+    const addButtonListeners = () => {
+        ['rock', 'paper', 'scissors', 'lizard', 'spok'].forEach((id) => {
+            const button = document.getElementById(id);
+            button.addEventListener('click', () => {
+                console.log("Clicked" + id)
+                socket.emit('turn', id);
+            });
+        });
+    };
 
-// });
+    addButtonListeners();
+
+
+
+});
 
 
 

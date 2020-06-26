@@ -15,8 +15,7 @@
       <h1>Greetings,<span id='username'><%=username %></span>!</h1>
       <div id="content"></div>
       <ul><b> Players Online : </b>
-        <li v-for="userOnline in usersOnline" v-cloak v-if='user!=userOnline'><span class='ready'>ready
-          </span><b>{{ userOnline }}</b><span @click="sendInv(userOnline)" id='target'> PvP</span></li>
+        <li v-for="userOnline in usersOnline" v-cloak v-if='user!=userOnline'><span v-bind:class="'status-' + statuses[userOnline]">{{statuses[userOnline]}} </span><b>{{ userOnline }}</b><span @click="sendInv(userOnline)" id='target' v-if='statuses[userOnline] == "ready"'> PvP</span></li>
       </ul>
       <form class='formDef' action="/logout?_method=DELETE" method="POST">
         <button type="submit">Log Out</button>
