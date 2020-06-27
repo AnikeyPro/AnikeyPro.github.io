@@ -10,7 +10,11 @@ const app = new Vue({
         gameOn: false,
         msg: '',
         statuses: {},
-        isPVPdisabled: false
+        isPVPdisabled: false,
+        turnID: '',
+        turnOponentID: null,
+        turnClass: ''
+
     },
     methods: {
         resetUsers: function (arr) {
@@ -52,7 +56,9 @@ const app = new Vue({
         },
         turn: function (event) {
             console.log("Clicked" + event.currentTarget.id)
+            this.turnID = event.currentTarget.id
             socket.emit('turn', event.currentTarget.id);
+            this.turnClass = 'disabled';
         }
 
     },
@@ -106,6 +112,9 @@ socket.on("connect", () => {
         app.statuses = statuses;
     });
 
+    socket.on('opponents-turn', (turn) => {
+        app.turnOponentID = turn;
+    });
 
     // socket.on('disconnect', function () {
     //     socket.disconnect();
