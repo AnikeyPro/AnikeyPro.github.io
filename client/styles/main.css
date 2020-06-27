@@ -45,7 +45,7 @@ h1{
 
 .wrapper{
     background-color: rgb(247, 250, 251);
-    width: 400px;
+    width: auto;
     margin: 20px auto;
     display: flex;
     flex-direction: column;
@@ -330,7 +330,7 @@ ul.chat-messages{
 }
 
 .status-playing{
-  color: #a50000db;
+  color: #a50000;
 }
 
 .disabled {
@@ -339,6 +339,10 @@ ul.chat-messages{
 }
 
 
+.disabled-force {
+  pointer-events: none;
+  opacity: 0.4;
+}
 
 @media only screen and (max-width: 600px) {
   .main{
@@ -377,8 +381,6 @@ ul.chat-messages{
     height: 300px;
 }
 
-
-
 [v-cloak] { 
   display: none; 
 }
@@ -387,3 +389,6 @@ ul.chat-messages{
   display: none; 
 }
 
+button.logout-button {
+    background-color: #ff4b4b;
+}

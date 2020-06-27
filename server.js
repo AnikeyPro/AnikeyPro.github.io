@@ -120,10 +120,6 @@ app.delete('/logout', (req, res) => {
 // проверяем на коннект с клиентом
 io.on('connection', (socket) => {
   console.log('Someone connected... emmm hi there ')
-  //   setTimeout(function () {
-  //     console.log("force disconnect");
-  //     sock.disconnect();
-  // }, 10000);
 
   //отправляем логин
   if (username != null) {
@@ -134,8 +130,8 @@ io.on('connection', (socket) => {
     if (usersOnline[socket.id]) {
       statuses[usersOnline[socket.id]] = 'ready';
     }
-    socket.emit('statuse-update', statuses);
-    socket.broadcast.emit('statuse-update', statuses);
+    socket.emit('status-update', statuses);
+    socket.broadcast.emit('status-update', statuses);
     console.log('statuses  are' + JSON.stringify(statuses))
     //отправляем список юзеров онлайн
     socket.emit('users-online', Object.values(usersOnline));
@@ -159,8 +155,8 @@ io.on('connection', (socket) => {
     if (players.from === usersOnline[socket.id]) {
       //обновляем статус на "в игре"
       statuses[usersOnline[socket.id]] = 'playing';
-      socket.emit('statuse-update', statuses);
-      socket.broadcast.emit('statuse-update', statuses);
+      socket.emit('status-update', statuses);
+      socket.broadcast.emit('status-update', statuses);
 
       var room = players.from + '&' + players.to;
       socket.broadcast.emit('lets-play', players, room);
@@ -178,8 +174,8 @@ io.on('connection', (socket) => {
     if (username === usersOnline[socket.id]) {
       //обновляем статус на "в игре"
       statuses[usersOnline[socket.id]] = 'playing';
-      socket.emit('statuse-update', statuses);
-      socket.broadcast.emit('statuse-update', statuses);
+      socket.emit('status-update', statuses);
+      socket.broadcast.emit('status-update', statuses);
 
       console.log(username + " sid " + socket.id + ' user joins to room  ' + room);
       rooms[room].users[socket.id] = usersOnline[socket.id];
@@ -187,7 +183,7 @@ io.on('connection', (socket) => {
 
       player1 = socket;
       //подключаем gamelogic
-      new Game(player1, player2,room,[usersOnline[player1.id],usersOnline[player2.id]]);
+      new Game(player1, player2, room, [usersOnline[player1.id], usersOnline[player2.id]]);
       player1 = null;
       player2 = null;
     }
@@ -195,12 +191,15 @@ io.on('connection', (socket) => {
 
 
   //чат
-  socket.on('message', (room, message) => {
-    console.log(JSON.stringify(socket.adapter.rooms) + 'aaa');
-    //console.log('users in room' + Object.entries(rooms[room].users));
-    socket.to(room).broadcast.emit('message', message);
+  socket.on('message', (room, message, left = false) => {
+    socket.to(room).broadcast.emit('message', message, left);
   })
 
+  //если вышел из игровой комнты и свободен к новым приглашениям
+  socket.on('left-and-ready', (param) => {
+    socket.emit('status-update', statuses);
+    socket.broadcast.emit('status-update', statuses);
+  })
 
   //логаут - убираем из списка онлайн 
   socket.on('disconnect', (reason) => {
@@ -208,15 +207,8 @@ io.on('connection', (socket) => {
     console.log('i\'m loggin out ' + usersOnline[socket.id])
     delete usersOnline[socket.id];
     delete statuses[usersOnline[socket.id]];
-
-    // getUserRooms(socket).forEach(room => {
-    //   console.log('puk ' + room);
-    //   socket.to(room).broadcast.emit('user-disconnected', rooms[room].users[socket.id])
-    //   console.log('deleting room ' + room);
-    //   delete rooms[room];
-    // })
-
-    socket.broadcast.emit('statuse-update', statuses);
+    //оповещаем о логауте
+    socket.broadcast.emit('status-update', statuses);
     socket.broadcast.emit('users-online', Object.values(usersOnline));
     console.log('users after logout  ' + Object.values(usersOnline))
   });
@@ -259,12 +251,12 @@ const cleanseString = function (string) {
 };
 
 
-function getUserRooms(socket) {
-  console.log('come on delete this  ' + socket.id);
-  return Object.entries(rooms).reduce((names, [name, room]) => {
-    console.log('rooms are before' + names);
-    if (room.users[socket.id] != null) names.push(name)
-    console.log('rooms are ' + names);
-    return names
-  }, [])
-}
+// function getUserRooms(socket) {
+//   console.log('come on delete this  ' + socket.id);
+//   return Object.entries(rooms).reduce((names, [name, room]) => {
+//     console.log('rooms are before' + names);
+//     if (room.users[socket.id] != null) names.push(name)
+//     console.log('rooms are ' + names);
+//     return names
+//   }, [])
+// }

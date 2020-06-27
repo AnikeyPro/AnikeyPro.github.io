@@ -18,8 +18,9 @@ const app = new Vue({
         timer: '',
         scores: [0, 0],
         winnerWindow: 'hidden',
-        globalWinner: 'noone'
-
+        turnSpanOpponent: 'Thinking..',
+        turnSpan: 'Make your choice!',
+        winMessage: 'The winner is '
     },
     methods: {
         resetUsers: function (arr) {
@@ -42,7 +43,6 @@ const app = new Vue({
         },
         startGame: function () {
             this.gameOn = true;
-            //localStorage.gameOn = true;
             if (this.showInv) {
                 this.showInv = false;
                 socket.emit('agreed-to-play', { 'from': this.user, 'to': this.opponent });
@@ -51,7 +51,11 @@ const app = new Vue({
         leaveGame: function () {
             console.log('ЖМИ');
             this.gameOn = false;
-            //localStorage.gameOn = false;
+            //если вышел раньше конца игры то - проигрыш
+            if (app.winnerWindow == 'hidden') {
+                socket.emit('message', this.roomName, this.user + " left the game... shame on him..", true);
+            }
+            socket.emit('left-and-ready', true);
         },
         sendToChat: function (e) {
             e.preventDefault();
@@ -66,11 +70,6 @@ const app = new Vue({
             this.turnClass = 'disabled';
         }
 
-    },
-    mounted() {
-        // if (localStorage.gameOn) {
-        //     this.gameOn = JSON.parse(localStorage.gameOn);
-        // }
     }
 
 });
@@ -79,53 +78,73 @@ const app = new Vue({
 const socket = io.connect();
 
 socket.on("connect", () => {
-    console.log('connected!');
 
-    //если в режиме меню
-    if (!app.gameOn) {
-        //юзеры - онлайн
-        socket.on('users-online', (usersOnline) => {
-            app.resetUsers(usersOnline);
-        });
+    //юзеры - онлайн
+    socket.on('users-online', (usersOnline) => {
+        app.resetUsers(usersOnline);
+    });
 
-        //получаем приглошение
-        socket.on('invitation', (players) => {
-            console.log(players.from + ' kinul priglos' + app.user);
-            app.opponent = players.from;
-            if (players.to === app.user) {
-                app.createInvitation(players.from);
-            }
-        });
+    //получаем приглашение
+    socket.on('invitation', (players) => {
+        app.opponent = players.from;
+        if (players.to === app.user) {
+            app.createInvitation(players.from);
+        }
+    });
 
-        //получаем согласие от оппонента
-        socket.on('lets-play', (players, room) => {
-            console.log(players.from + ' agreed lets play' + app.user);
-            if (players.to === app.user) {
-                app.startGame();
-                socket.emit('connect-me-too', room, app.user);
-            }
-        });
-    }
-    //если в игре 
+    //получаем согласие от оппонента
+    socket.on('lets-play', (players, room) => {
+        if (players.to === app.user) {
+            app.startGame();
+            socket.emit('connect-me-too', room, app.user);
+        }
+    });
+
     //получаем сообщения с чата
-    socket.on('message', (msg) => {
+    socket.on('message', (msg, left = false) => {
+        if (left) {
+            app.globalWinner = app.user;
+            app.winnerWindow = 'winnerWindow';
+            app.winMessage = 'Opponent left. Enjoy, you are the WINNER!!!'
+        }
         app.messages.push(msg);
     });
 
     //обновляем статусы
-    socket.on('statuse-update', (statuses) => {
+    socket.on('status-update', (statuses) => {
         app.statuses = statuses;
     });
     //получаем ход противника
     socket.on('opponents-turn', (turn) => {
-        app.turnOponentID = turn;
+        if (turn != null) {
+            app.turnOponentID = turn;
+        }
+    });
+
+    socket.on('timer', (time) => {
+        app.timer = time;
     });
 
     //получаем инфу что раунд закончен 
-    socket.on('end-of-round', (msg, winner) => {
+    socket.on('end-of-round', (msg, winner, oppTimeOut = false) => {
         app.messages.push(msg);
         if (winner == 'DRAW') {
-            app.timer = ' I\'S A DRAW!!!';
+            app.timer = ' IT\'S A DRAW!!!';
+        } else if (winner == 'DRAWNOTIME') {
+            app.timer = ' IT\'S A DRAW!!! Both players timed out';
+            app.turnSpan = 'Time out...'
+            app.turnSpanOpponent = 'Time out...'
+            app.turnClass = 'disabled-force';
+        } else if (oppTimeOut) {
+            app.timer = winner + ' IS WINNER!!! ';
+            if (app.user == winner) {
+                app.scores[0]++;
+                app.turnSpanOpponent = 'Time out...'
+            } else {
+                app.scores[1]++;
+                app.turnSpan = 'Time out...'
+                app.turnClass = 'disabled-force';
+            }
         } else {
             app.timer = winner + ' IS WINNER!!!';
             if (app.user == winner) {
@@ -137,26 +156,25 @@ socket.on("connect", () => {
 
 
         setTimeout(() => {
-            if (app.scores.indexOf(3) != -1) {
-                app.globalWinner = (app.scores.indexOf(3) == 0) ? app.user : app.opponent;
+            if (app.scores.indexOf(5) != -1) {
+                if (app.scores.indexOf(5) == 0) {
+                    app.winMessage = ' YOU WIN !!! CONGRATULATIONNS!!!';
+                } else {
+                    app.winMessage = 'YOU LOST! THE WINNER IS ' + app.opponent + ' !!!';
+                }
                 app.winnerWindow = 'winnerWindow';
 
             } else {
                 app.roundNum++;
                 app.turnClass = ''
                 app.turnOponentID = null;
-                app.timer = 30;
+                app.turnSpan = 'Make your choice!'
+                app.turnSpanOpponent = 'Thinking...'
+                socket.emit('round-finished', true);
             }
-        }, 2000);
+        }, 5000);
 
     });
-
-    // socket.on('disconnect', function () {
-    //     socket.disconnect();
-    //     console.log('disconnected');
-    //     location.reload();
-
-    // });
 
 });
 
