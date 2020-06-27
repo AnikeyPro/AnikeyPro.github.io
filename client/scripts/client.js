@@ -37,7 +37,7 @@ const app = new Vue({
         },
         startGame: function () {
             this.gameOn = true;
-            localStorage.gameOn = true;
+            //localStorage.gameOn = true;
             if (this.showInv) {
                 this.showInv = false;
                 socket.emit('agreed-to-play', { 'from': this.user, 'to': this.opponent });
@@ -46,7 +46,7 @@ const app = new Vue({
         leaveGame: function () {
             console.log('ЖМИ');
             this.gameOn = false;
-            localStorage.gameOn = false;
+            //localStorage.gameOn = false;
         },
         sendToChat: function (e) {
             e.preventDefault();
@@ -63,9 +63,9 @@ const app = new Vue({
 
     },
     mounted() {
-        if (localStorage.gameOn) {
-            this.gameOn = JSON.parse(localStorage.gameOn);
-        }
+        // if (localStorage.gameOn) {
+        //     this.gameOn = JSON.parse(localStorage.gameOn);
+        // }
     }
 
 });
