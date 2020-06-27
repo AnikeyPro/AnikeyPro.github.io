@@ -250,6 +250,14 @@ transform: scale(1.3);
   flex-direction: row;
 }
 
+.row-but {
+  display: flex;
+  font-size: 30px;
+  font-weight: 800;
+  justify-content: center;
+  flex-direction: row;
+}
+
 .main button {
   line-height: 42px;
   font-size: 18px;
@@ -289,15 +297,6 @@ transform: scale(1.3);
 
 #target:hover{
   cursor:pointer
-}
-
-
-[v-cloak] { 
-  display: none; 
-}
-
-[hidden] { 
-  display: none; 
 }
 
 
@@ -368,3 +367,23 @@ ul.chat-messages{
 
 
 }
+
+.winnerWindow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    color: #1c961c;
+    height: 300px;
+}
+
+
+
+[v-cloak] { 
+  display: none; 
+}
+
+.hidden, [hidden] { 
+  display: none; 
+}
+

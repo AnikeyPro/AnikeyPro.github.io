@@ -13,7 +13,12 @@ const app = new Vue({
         isPVPdisabled: false,
         turnID: '',
         turnOponentID: null,
-        turnClass: ''
+        turnClass: '',
+        roundNum: 1,
+        timer: '',
+        scores: [0, 0],
+        winnerWindow: 'hidden',
+        globalWinner: 'noone'
 
     },
     methods: {
@@ -111,9 +116,39 @@ socket.on("connect", () => {
     socket.on('statuse-update', (statuses) => {
         app.statuses = statuses;
     });
-
+    //получаем ход противника
     socket.on('opponents-turn', (turn) => {
         app.turnOponentID = turn;
+    });
+
+    //получаем инфу что раунд закончен 
+    socket.on('end-of-round', (msg, winner) => {
+        app.messages.push(msg);
+        if (winner == 'DRAW') {
+            app.timer = ' I\'S A DRAW!!!';
+        } else {
+            app.timer = winner + ' IS WINNER!!!';
+            if (app.user == winner) {
+                app.scores[0]++;
+            } else {
+                app.scores[1]++;
+            }
+        }
+
+
+        setTimeout(() => {
+            if (app.scores.indexOf(3) != -1) {
+                app.globalWinner = (app.scores.indexOf(3) == 0) ? app.user : app.opponent;
+                app.winnerWindow = 'winnerWindow';
+
+            } else {
+                app.roundNum++;
+                app.turnClass = ''
+                app.turnOponentID = null;
+                app.timer = 30;
+            }
+        }, 2000);
+
     });
 
     // socket.on('disconnect', function () {

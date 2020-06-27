@@ -1,17 +1,27 @@
 class Game {
-    constructor(p1, p2, room) {
+    constructor(p1, p2, room, users) {
         this._players = [p1, p2];
         this._turns = [null, null];
+        this._users = users;
         this.room = room;
 
         this._sendToPlayers('LET THE GAME BEGIN!!!');
 
-
         this._players.forEach((player, idx) => {
             player.on('turn', (turn) => {
+                
+        console.log('When??/ ' + this._turns);
                 this._onTurn(idx, turn);
             });
         });
+
+
+        // var countdown = 15;
+        // setInterval(function() {
+        //   countdown--;
+        //   this._timerToPlayers(countdown);
+
+        // }, 1000);
     }
     //сообщение только игроку
     _sendToPlayer(playerIndex, msg) {
@@ -23,6 +33,12 @@ class Game {
     _sendToPlayers(msg) {
         this._players.forEach(player => {
             player.emit('message', msg);
+        })
+    }
+
+    _timerToPlayers(timeout) {
+        this._players.forEach(player => {
+            player.emit('timer', timeout);
         })
     }
 
@@ -42,12 +58,12 @@ class Game {
 
         if (turns[0] && turns[1]) {
             this._players.forEach((player, idx) => {
-                this._sendToPlayer(idx, 'Turn Over with  ' + turns.join(' : '));
+                this._sendToPlayer(idx, 'Turn is over with  ' + turns.join(' : '));
                 turns.reverse();
             });
             this._emitTurns(turns.reverse());
             this._getGameResult();
-            this.turns = [null, null];
+            this._turns = [null, null];
             this._sendToPlayers('Next Round!');
 
         }
@@ -74,7 +90,6 @@ class Game {
     _getGameResult() {
         const p0 = this._decodeTurn(this._turns[0]);
         const p1 = this._decodeTurn(this._turns[1]);
-        console.log(typeof p1 );
 
         console.log(this._turns + ' turns');
         console.log(p1+ ' - ' + p0 );
@@ -84,18 +99,18 @@ class Game {
         console.log('diff ' + difference)
         switch (difference) {
             case 0:
-                this._sendToPlayers('Draw! No Winner this time!');
+                this._sendWinMessage(this._players[0], this._players[1],2);
                 break;
 
             case 1:
             case 2:
-                this._sendWinMessage(this._players[0], this._players[1]);
+                this._sendWinMessage(this._players[0], this._players[1],0);
                 console.log('are we here?')
                 break;
 
             case 3:
             case 4:
-                this._sendWinMessage(this._players[1], this._players[0]);
+                this._sendWinMessage(this._players[1], this._players[0],1);
                 console.log('or here?')
                 break;
         }
@@ -103,9 +118,17 @@ class Game {
 
 
     //приятные победные сообщения
-    _sendWinMessage(winner, loser) {
-        winner.emit('message', 'You won this round!');
-        loser.emit('message', 'You lost this round!.');
+    _sendWinMessage(winner, loser , winnerIdx) {
+        let winnerName = this._users[winnerIdx];
+        //проверка на ничью
+        if(winnerIdx == 2){
+            winnerName = 'DRAW';
+            winner.emit('end-of-round', 'Draw! There is no winner this time!', winnerName);
+            loser.emit('end-of-round', 'Draw! There is no winner this time!', winnerName);
+        }else{
+            winner.emit('end-of-round', 'You won this round!', winnerName);
+            loser.emit('end-of-round', 'You lost this round!', winnerName);
+        }
     }
 
 
@@ -114,9 +137,9 @@ class Game {
         console.log(turn);
         switch (turn) {
             case 'rock':
-                return 0;
-            case 'spock':
                 return 1;
+            case 'spock':
+                return 2;
             case 'paper':
                 return 3;
             case 'lizard':

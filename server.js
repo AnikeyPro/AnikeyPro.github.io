@@ -187,7 +187,7 @@ io.on('connection', (socket) => {
 
       player1 = socket;
       //подключаем gamelogic
-      new Game(player1, player2,room);
+      new Game(player1, player2,room,[usersOnline[player1.id],usersOnline[player2.id]]);
       player1 = null;
       player2 = null;
     }

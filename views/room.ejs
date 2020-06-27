@@ -1,19 +1,18 @@
 <div id="game" v-if='gameOn'>
     <div class="main">
-        <div class='row'>
+        <div class='row' v-if='winnerWindow == "hidden"'>
             <div class='row-33'>{{user}}</div>
-            <div class='row-33'> 0 : 0 </div>
+            <div class='row-33'>{{scores.join(' : ')}}</div>
             <div class='row-33'>{{opponent}}</div>
         </div>
-        <div class='row'>
+        <div class='row' v-if='winnerWindow == "hidden"'>
             <div class='row-33'><img v-if='turnClass=="disabled"' v-bind='{src: "img/" + turnID + ".png"}'  v-bind='{alt: turnID}' height="150px" width='150px' ><span v-else>Make a choice!</span></div>
-            <div class='row-33'><div class='row-100'>Round 1</div><div class='row-100'> TIME </div></div>
+            <div class='row-33'><div class='row-100'>Round {{roundNum}}</div><div class='row-100'>{{timer}}</div></div>
             <div class='row-33'><img v-if='turnOponentID' v-bind='{src: "img/" + turnOponentID + ".png"}'  v-bind='{alt: turnID}' height="150px" width='150px' ><span v-else>Thinking..</span></div>
         </div>
-        <div class='row'>
-            <div class='row-33'></div>
-            <div class='row-33'><button type="button" @click ='leaveGame()'>Leave Game</button></div>
-            <div class='row-33'></div>
+        <div v-bind='{class: winnerWindow}'> THE WINNER IS {{globalWinner}}!!! </div>
+        <div class='row-but'>
+            <div class='row-100'><button type="button" @click ='leaveGame()'>Leave Game</button></div>
         </div>
     </div>
     <div class='game' v-bind:class='turnClass'>
