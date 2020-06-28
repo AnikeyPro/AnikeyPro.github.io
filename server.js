@@ -16,7 +16,7 @@ const Game = require('./gameLogic');
 
 //подключаем бд
 const sqlite3 = require('sqlite3').verbose();
-const dbFile = 'userdata.db';
+const dbFile = './db/userdata.db';
 const fs = require("fs");
 const exists = fs.existsSync(dbFile);
 var db = new sqlite3.Database(dbFile);
@@ -46,7 +46,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(__dirname + '/client'));
 app.use(flash());
 app.use(session({
-  store: new SQLiteStore,
+  store: new SQLiteStore({dir:'./db/', db: 'sessions.db'}),
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
