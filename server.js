@@ -8,7 +8,7 @@ const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
 const flash = require('express-flash');
 const session = require('express-session');
-var SQLiteStore = require('connect-sqlite3')(session);
+const SQLiteStore = require('connect-sqlite3')(session);
 const methodOverride = require('method-override');
 
 //наш класс игры
@@ -19,7 +19,12 @@ const sqlite3 = require('sqlite3').verbose();
 const dbFile = './db/userdata.db';
 const fs = require("fs");
 const exists = fs.existsSync(dbFile);
-var db = new sqlite3.Database(dbFile);
+let db = new sqlite3.Database(dbFile , (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log('Connected to the userdata database.');
+});
 
 db.serialize(() => {
   if (!exists) {
