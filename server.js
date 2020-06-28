@@ -190,6 +190,13 @@ io.on('connection', (socket) => {
   //логаут - убираем из списка онлайн 
   socket.on('disconnect', (reason) => {
     console.log('Disconnected! Reason: ' + reason);
+    //если у игрока незаконченные игры заканчиваем
+    getUserRooms(socket).forEach(room => {
+      socket.to(room).broadcast.emit('user-disconnected', rooms[room].users[socket.id])
+      socket.to(room).emit('message',  usersOnline[socket.id] + " left the game... shame on him..", true);
+      delete rooms[room].users[socket.id]
+    })
+    //удаляем из онлайна
     delete usersOnline[socket.id];
     delete statuses[usersOnline[socket.id]];
     //оповещаем о логауте

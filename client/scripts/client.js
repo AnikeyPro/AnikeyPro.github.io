@@ -146,7 +146,7 @@ socket.on("connect", () => {
             app.turnSpanOpponent = 'Time out...'
             app.turnClass = 'disabled-force';
         } else if (oppTimeOut) {
-            app.timer = winner + ' IS WINNER!!! ';
+            app.timer = winner + ' IS WINNER!!!';
             if (app.user == winner) {
                 app.scores[0]++;
                 app.turnSpanOpponent = 'Time out...'
@@ -163,27 +163,27 @@ socket.on("connect", () => {
                 app.scores[1]++;
             }
         }
-            //показываем результаты хода на 5 сек
-            miniTimeout = setTimeout(() => {
-                //если есть победитель завершаем игру
-                if (app.scores.indexOf(5) != -1) {
-                    if (app.scores.indexOf(5) == 0) {
-                        app.winMessage = ' YOU WIN !!! CONGRATULATIONNS!!!';
-                    } else {
-                        app.winMessage = 'YOU LOST! THE WINNER IS ' + app.opponent + ' !!!';
-                    }
-                    app.winnerWindow = 'winnerWindow';
-
-                } else if(app.winnerWindow == 'hidden' && app.gameOn){
-                    app.roundNum++;
-                    app.turnClass = ''
-                    app.turnOponentID = null;
-                    app.turnSpan = 'Make your choice!'
-                    app.turnSpanOpponent = 'Thinking...'
-                    socket.emit('round-finished', true);
+        //показываем результаты хода на 5 сек
+        miniTimeout = setTimeout(() => {
+            //если есть победитель завершаем игру
+            if (app.scores.indexOf(5) != -1) {
+                if (app.scores.indexOf(5) == 0) {
+                    app.winMessage = ' YOU WIN !!! CONGRATULATIONNS!!!';
+                } else {
+                    app.winMessage = 'YOU LOST! BETTER LUCK NEX TIME!!!';
                 }
-            }, 5000);
-        
+                app.winnerWindow = 'winnerWindow';
+
+            } else if (app.winnerWindow == 'hidden' && app.gameOn) {
+                app.roundNum++;
+                app.turnClass = ''
+                app.turnOponentID = null;
+                app.turnSpan = 'Make your choice!'
+                app.turnSpanOpponent = 'Thinking...'
+                socket.emit('round-finished', true);
+            }
+        }, 5000);
+
     });
 
 });

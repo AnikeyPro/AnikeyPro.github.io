@@ -343,6 +343,14 @@ ul.chat-messages{
   pointer-events: none;
   opacity: 0.4;
 }
+.winnerWindow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    color: #1c961c;
+    height: 300px;
+}
 
 @media only screen and (max-width: 600px) {
   .main{
@@ -369,17 +377,16 @@ ul.chat-messages{
     margin-bottom:8px;
   }
 
-
-}
-
-.winnerWindow {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 40px;
+  
+  .winnerWindow {
+    font-size: 20px;
     color: #1c961c;
     height: 300px;
+  }
+
+
 }
+
 
 button.logout-button {
   background-color: #ff4b4b;
