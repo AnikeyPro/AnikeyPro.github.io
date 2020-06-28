@@ -5,26 +5,41 @@ class Game {
         this._users = users;
         this.room = room;
         this.interval = null;
+        this.turnTime = 30;//время на ход
+
+        //чистим листенеры, дабы избежать дублирования
+        this._players.forEach((player, idx) => {
+            player.removeAllListeners('turn');
+            player.removeAllListeners('game-end');
+            player.removeAllListeners('round-finished');
+        });
+        clearInterval(this.interval);
 
         //приветствие
         this._sendToPlayers('LET THE GAME BEGIN!!!');
-        //устанавливаем таймер в 15 секк
-        this._setTimeOut(5);
+
+        //устанавливаем таймер на ход 30 секк
+        this._setTimeOut(this.turnTime);
 
         // остслеживаем ходы
         this._players.forEach((player, idx) => {
             player.on('turn', (turn) => {
                 this._onTurn(idx, turn);
             });
-
         });
+
         //Включаем таймер при переходе на новый раунд
         p1.on('round-finished', (state) => {
-            if(state){
-                this._setTimeOut(5);
+            if (state) {
+                this._setTimeOut(this.turnTime);
             }
         });
 
+        this._players.forEach((player, idx) => {
+            player.on('game-end', () => {
+                clearInterval(this.interval);
+            });
+        });
     }
 
     //настраиваем таймер 
@@ -35,6 +50,7 @@ class Game {
             countdown--;
             if (countdown == 0) {
                 clearInterval(this.interval);
+                //проверяем если кто то пропустил ход
                 if (this._turns.includes(null)) {
                     if (this._turns[0] == null && this._turns[1] == null) {
                         this._sendWinMessage(this._players[0], this._players[1], 3);
@@ -44,7 +60,7 @@ class Game {
                         this._emitTurns(this._turns.reverse());
                         this._turns = [null, null];
                     } else if (this._turns[0] == null) {
-                        this. _sendWinMessage(this._players[1], this._players[0], -2);
+                        this._sendWinMessage(this._players[1], this._players[0], -2);
                         this._emitTurns(this._turns.reverse());
                         this._turns = [null, null];
                     }
@@ -53,10 +69,8 @@ class Game {
         }, 1000);
     }
 
-
     //сообщение только игроку
     _sendToPlayer(playerIndex, msg) {
-        console.log(this.room + '2sent li? ' + this._players[playerIndex].id + '  messaga ' + msg);
         this._players[playerIndex].emit('message', msg);
     }
 
@@ -67,6 +81,7 @@ class Game {
         })
     }
 
+    //отображаем таймер игрокам
     _timerToPlayers(timeout) {
         this._players.forEach(player => {
             player.emit('timer', timeout);
@@ -76,10 +91,7 @@ class Game {
     //отправляем текстовое подтверждение хода
     _onTurn(playerIndex, turn) {
         this._turns[playerIndex] = turn;
-        console.log('1sent li? ' + playerIndex + '  messaga ' + turn);
         this._sendToPlayer(playerIndex, `You selected ${turn}`);
-
-
         this._checkTurnOver();
     }
 
@@ -122,12 +134,8 @@ class Game {
         const p0 = this._decodeTurn(this._turns[0]);
         const p1 = this._decodeTurn(this._turns[1]);
 
-        console.log(this._turns + ' turns');
-        console.log(p1 + ' - ' + p0);
-        console.log(p1 + ' - ' + p0 + '=' + (p1 - p0));
         const difference = (p1 - p0 + 5) % 5;
 
-        console.log('diff ' + difference)
         switch (difference) {
             case 0:
                 this._sendWinMessage(this._players[0], this._players[1], 2);
@@ -144,7 +152,6 @@ class Game {
                 break;
         }
     }
-
 
     /**
      * Приятные победные(но это не точно) сообщения
@@ -177,7 +184,7 @@ class Game {
             case -2:
                 winnerName = this._users[1];
                 winner.emit('end-of-round', 'You won this round!  Opponent timed out!', winnerName, true);
-                loser.emit('end-of-round', 'Time out!', winnerName , true);
+                loser.emit('end-of-round', 'Time out!', winnerName, true);
                 break;
             default:
                 winnerName = this._users[winnerIdx];
@@ -187,11 +194,8 @@ class Game {
         }
     }
 
-
-
     //Заменяем ход цифрой
     _decodeTurn(turn) {
-        console.log(turn);
         switch (turn) {
             case 'rock':
                 return 1;
@@ -210,6 +214,5 @@ class Game {
 
 
 }
-
 
 module.exports = Game;

@@ -381,14 +381,14 @@ ul.chat-messages{
     height: 300px;
 }
 
+button.logout-button {
+  background-color: #ff4b4b;
+}
+
 [v-cloak] { 
   display: none; 
 }
 
 .hidden, [hidden] { 
   display: none; 
-}
-
-button.logout-button {
-    background-color: #ff4b4b;
 }

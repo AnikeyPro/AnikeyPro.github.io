@@ -2,7 +2,6 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
 
-
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
@@ -10,9 +9,7 @@ const io = require('socket.io').listen(server);
 const flash = require('express-flash');
 const session = require('express-session');
 var SQLiteStore = require('connect-sqlite3')(session);
-
 const methodOverride = require('method-override');
-
 
 //наш класс игры
 const Game = require('./gameLogic');
@@ -25,7 +22,6 @@ const exists = fs.existsSync(dbFile);
 var db = new sqlite3.Database(dbFile);
 
 db.serialize(() => {
-  console.log(exists);
   if (!exists) {
     db.run(
       "CREATE TABLE Users (id INTEGER PRIMARY KEY AUTOINCREMENT, user TEXT, password TEXT)"
@@ -60,12 +56,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride('_method'));
 
-
 //список онлайн
 const usersOnline = {};
 var username = null;
 
-//статусы
+//статусы пользователей
 const statuses = {};
 
 //игроки для класса Game
@@ -74,7 +69,6 @@ let player2 = null;
 
 //комнаты
 const rooms = {}
-
 
 app.get('/', checkAuthenticated, (req, res) => {
   res.render('index.ejs', { username: req.user.username });
@@ -99,14 +93,12 @@ app.post('/register', checkNotAuthenticated, async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const clearUsername = cleanseString(req.body.username);
-    console.log(hashedPassword, clearUsername);
     db.run(`INSERT INTO Users (username, password) VALUES ("${clearUsername}","${hashedPassword}")`);
     res.redirect('/login?registered');
   } catch  {
     res.redirect('/register');
   }
 });
-
 
 app.delete('/logout', (req, res) => {
   req.logOut()
@@ -115,24 +107,19 @@ app.delete('/logout', (req, res) => {
   });
 })
 
-
-
 // проверяем на коннект с клиентом
 io.on('connection', (socket) => {
-  console.log('Someone connected... emmm hi there ')
+  console.log('Someone connected. Socket.id = ' + socket.id)
 
   //отправляем логин
   if (username != null) {
     if (!Object.values(usersOnline).find(name => name === username)) { usersOnline[socket.id] = username; }
-    console.log('i\'m still online ' + usersOnline[socket.id] + "sock " + socket.id)
-    console.log('all users are  ' + Object.values(usersOnline))
     //присваеваем статус готов к игре
     if (usersOnline[socket.id]) {
       statuses[usersOnline[socket.id]] = 'ready';
     }
     socket.emit('status-update', statuses);
     socket.broadcast.emit('status-update', statuses);
-    console.log('statuses  are' + JSON.stringify(statuses))
     //отправляем список юзеров онлайн
     socket.emit('users-online', Object.values(usersOnline));
     socket.broadcast.emit('users-online', Object.values(usersOnline));
@@ -140,9 +127,6 @@ io.on('connection', (socket) => {
 
   // перенаправляем приглос
   socket.on('send-request', (players) => {
-    console.log('username' + username);
-    console.log(players.from + ' sends to ' + players.to);
-    console.log(players.to + ' emmit ' + username);
     if (players.from === usersOnline[socket.id]) {
       socket.broadcast.emit('invitation', players);
     }
@@ -151,7 +135,6 @@ io.on('connection', (socket) => {
 
   //если согласился->создаем комнату для игры
   socket.on('agreed-to-play', (players) => {
-    console.log('username' + username + ' = ' + players.from + ' agreed to play with ' + players.to);
     if (players.from === usersOnline[socket.id]) {
       //обновляем статус на "в игре"
       statuses[usersOnline[socket.id]] = 'playing';
@@ -163,8 +146,6 @@ io.on('connection', (socket) => {
       rooms[room] = { users: {} }
       rooms[room].users[socket.id] = usersOnline[socket.id];
       socket.join(room);
-
-      console.log(players.from + " sid " + socket.id + ' user joins to room  ' + room);
       player2 = socket;
     }
   });
@@ -176,8 +157,6 @@ io.on('connection', (socket) => {
       statuses[usersOnline[socket.id]] = 'playing';
       socket.emit('status-update', statuses);
       socket.broadcast.emit('status-update', statuses);
-
-      console.log(username + " sid " + socket.id + ' user joins to room  ' + room);
       rooms[room].users[socket.id] = usersOnline[socket.id];
       socket.join(room);
 
@@ -189,38 +168,37 @@ io.on('connection', (socket) => {
     }
   });
 
-
   //чат
   socket.on('message', (room, message, left = false) => {
     socket.to(room).broadcast.emit('message', message, left);
   })
 
   //если вышел из игровой комнты и свободен к новым приглашениям
-  socket.on('left-and-ready', (param) => {
+  socket.on('left-and-ready', (room) => {
+    if (usersOnline[socket.id]) {
+      statuses[usersOnline[socket.id]] = 'ready';
+    }
+    //покидаем комнату
+    getUserRooms(socket).forEach(room => {
+      socket.to(room).broadcast.emit('user-disconnected', rooms[room].users[socket.id])
+      delete rooms[room].users[socket.id]
+    })
     socket.emit('status-update', statuses);
     socket.broadcast.emit('status-update', statuses);
   })
 
   //логаут - убираем из списка онлайн 
   socket.on('disconnect', (reason) => {
-    console.log('reason ' + reason);
-    console.log('i\'m loggin out ' + usersOnline[socket.id])
+    console.log('Disconnected! Reason: ' + reason);
     delete usersOnline[socket.id];
     delete statuses[usersOnline[socket.id]];
     //оповещаем о логауте
     socket.broadcast.emit('status-update', statuses);
     socket.broadcast.emit('users-online', Object.values(usersOnline));
-    console.log('users after logout  ' + Object.values(usersOnline))
   });
 
 
-
-  var today = new Date();
-  var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-  console.log('==================' + time);
-
 });
-
 
 server.on('error', (err) => {
   console.log('Server error', err)
@@ -250,13 +228,9 @@ const cleanseString = function (string) {
   return string.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 };
 
-
-// function getUserRooms(socket) {
-//   console.log('come on delete this  ' + socket.id);
-//   return Object.entries(rooms).reduce((names, [name, room]) => {
-//     console.log('rooms are before' + names);
-//     if (room.users[socket.id] != null) names.push(name)
-//     console.log('rooms are ' + names);
-//     return names
-//   }, [])
-// }
+function getUserRooms(socket) {
+    return Object.entries(rooms).reduce((names, [name, room]) => {
+      if (room.users[socket.id] != null) names.push(name)
+      return names
+    }, [])
+  }

@@ -20,14 +20,14 @@ const app = new Vue({
         winnerWindow: 'hidden',
         turnSpanOpponent: 'Thinking..',
         turnSpan: 'Make your choice!',
-        winMessage: 'The winner is '
+        winMessage: null,
+        miniTimeout: null
     },
     methods: {
         resetUsers: function (arr) {
             this.usersOnline = arr;
         },
         sendInv: function (target) {
-            console.log(this.user, target);
             this.roomName = target + '&' + this.user;
             //отправляем приглашение
             this.opponent = target;
@@ -37,6 +37,7 @@ const app = new Vue({
             this.roomName = this.user + '&' + opponent;
             this.opponent = opponent;
             this.showInv = true;
+            this.messages = ['Game Log'];
         },
         declineInv: function () {
             this.showInv = false;
@@ -47,15 +48,25 @@ const app = new Vue({
                 this.showInv = false;
                 socket.emit('agreed-to-play', { 'from': this.user, 'to': this.opponent });
             }
+            this.messages = ['Game Log'];
         },
         leaveGame: function () {
-            console.log('ЖМИ');
             this.gameOn = false;
             //если вышел раньше конца игры то - проигрыш
-            if (app.winnerWindow == 'hidden') {
+            if (this.winnerWindow == 'hidden') {
                 socket.emit('message', this.roomName, this.user + " left the game... shame on him..", true);
             }
-            socket.emit('left-and-ready', true);
+            socket.emit('game-end');
+            socket.emit('left-and-ready', this.room);
+            //обнуляем результаты
+            this.winnerWindow = 'hidden';
+            this.roundNum = 1;
+            this.scores = [0, 0];
+            this.timer = '';
+            this.turnClass = '';
+            this.turnOponentID = null;
+            this.turnSpanOpponent = 'Thinking..';
+            this.turnSpan = 'Make your choice!';
         },
         sendToChat: function (e) {
             e.preventDefault();
@@ -64,7 +75,6 @@ const app = new Vue({
             this.msg = '';
         },
         turn: function (event) {
-            console.log("Clicked" + event.currentTarget.id)
             this.turnID = event.currentTarget.id
             socket.emit('turn', event.currentTarget.id);
             this.turnClass = 'disabled';
@@ -103,9 +113,9 @@ socket.on("connect", () => {
     //получаем сообщения с чата
     socket.on('message', (msg, left = false) => {
         if (left) {
-            app.globalWinner = app.user;
             app.winnerWindow = 'winnerWindow';
-            app.winMessage = 'Opponent left. Enjoy, you are the WINNER!!!'
+            app.winMessage = 'Opponent left. Enjoy, you are the WINNER!!!';
+            app.turnClass = 'disabled-force';
         }
         app.messages.push(msg);
     });
@@ -153,27 +163,27 @@ socket.on("connect", () => {
                 app.scores[1]++;
             }
         }
+            //показываем результаты хода на 5 сек
+            miniTimeout = setTimeout(() => {
+                //если есть победитель завершаем игру
+                if (app.scores.indexOf(5) != -1) {
+                    if (app.scores.indexOf(5) == 0) {
+                        app.winMessage = ' YOU WIN !!! CONGRATULATIONNS!!!';
+                    } else {
+                        app.winMessage = 'YOU LOST! THE WINNER IS ' + app.opponent + ' !!!';
+                    }
+                    app.winnerWindow = 'winnerWindow';
 
-
-        setTimeout(() => {
-            if (app.scores.indexOf(5) != -1) {
-                if (app.scores.indexOf(5) == 0) {
-                    app.winMessage = ' YOU WIN !!! CONGRATULATIONNS!!!';
-                } else {
-                    app.winMessage = 'YOU LOST! THE WINNER IS ' + app.opponent + ' !!!';
+                } else if(app.winnerWindow == 'hidden' && app.gameOn){
+                    app.roundNum++;
+                    app.turnClass = ''
+                    app.turnOponentID = null;
+                    app.turnSpan = 'Make your choice!'
+                    app.turnSpanOpponent = 'Thinking...'
+                    socket.emit('round-finished', true);
                 }
-                app.winnerWindow = 'winnerWindow';
-
-            } else {
-                app.roundNum++;
-                app.turnClass = ''
-                app.turnOponentID = null;
-                app.turnSpan = 'Make your choice!'
-                app.turnSpanOpponent = 'Thinking...'
-                socket.emit('round-finished', true);
-            }
-        }, 5000);
-
+            }, 5000);
+        
     });
 
 });
