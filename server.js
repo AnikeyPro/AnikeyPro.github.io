@@ -29,7 +29,7 @@ let db = new sqlite3.Database(dbFile , (err) => {
 db.serialize(() => {
   if (!exists) {
     db.run(
-      "CREATE TABLE Users (id INTEGER PRIMARY KEY AUTOINCREMENT, user TEXT, password TEXT)"
+      "CREATE TABLE Users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)"
     );
   } else {
     console.log('Database ready to go!');
