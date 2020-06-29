@@ -44,6 +44,7 @@ const app = new Vue({
         },
         startGame: function () {
             this.gameOn = true;
+            $('#game').removeAttr('hidden');
             if (this.showInv) {
                 this.showInv = false;
                 socket.emit('agreed-to-play', { 'from': this.user, 'to': this.opponent });
@@ -52,6 +53,7 @@ const app = new Vue({
         },
         leaveGame: function () {
             this.gameOn = false;
+            $('#game').attr('hidden',true);
             //если вышел раньше конца игры то - проигрыш
             if (this.winnerWindow == 'hidden') {
                 socket.emit('message', this.roomName, this.user + " left the game... shame on him..", true);
