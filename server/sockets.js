@@ -64,8 +64,9 @@ module.exports = function (io, app) {
             })
 
             //если вышел из игровой комнты и свободен к новым приглашениям
-            socket.on('left-and-ready', (room) => {
+            socket.on('left-and-ready', (opp = null) => {
                 usersOnline.setStatusBySid(socket.id, 'ready')
+                usersOnline.setStatusByName(opp, 'ready')
                 io.sockets.emit('users-update', usersOnline.getUsersAndStatuses());
                 //покидаем комнату
                 usersOnline.deleteFromRoom(socket);

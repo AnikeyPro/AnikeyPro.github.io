@@ -37,6 +37,7 @@ const app = new Vue({
         },
         declineInv: function () {
             this.showInv = false;
+            socket.emit('left-and-ready',this.opponent);
         },
         startGame: function () {
             this.gameOn = true;
@@ -55,7 +56,7 @@ const app = new Vue({
                 socket.emit('message', this.roomName, this.user + " left the game... shame on him..", true);
             }
             socket.emit('game-end');
-            socket.emit('left-and-ready', this.room);
+            socket.emit('left-and-ready');
             //обнуляем результаты
             this.winnerWindow = 'hidden';
             this.roundNum = 1;
