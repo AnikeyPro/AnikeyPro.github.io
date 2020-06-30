@@ -329,6 +329,10 @@ ul.chat-messages{
   color:#00c100;
 }
 
+.status-busy{
+  color: #a50000;
+}
+
 .status-playing{
   color: #a50000;
 }
@@ -337,7 +341,6 @@ ul.chat-messages{
   pointer-events: none;
   opacity: 0.4;
 }
-
 
 .disabled-force {
   pointer-events: none;
