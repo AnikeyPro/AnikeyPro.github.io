@@ -3,19 +3,21 @@ class UsersOnline {
     constructor() {
         this.users = {};
         this.statuses = {};
-        this.rooms={}
+        this.rooms = {}
     }
 
     newUserOnline(sid, name) {
-        this.users[sid] = name
-        this.statuses[name] = 'ready'
+        if (name) {
+            this.users[sid] = name
+            this.statuses[name] = 'ready'
+        }
     }
 
-    getUserName(sid){
+    getUserName(sid) {
         return this.users[sid]
     }
 
-    deleteUser(sid){
+    deleteUser(sid) {
         delete this.users[sid];
         delete this.statuses[this.users[sid]];
     }
@@ -25,7 +27,9 @@ class UsersOnline {
     }
 
     setStatusByName(name, status) {
-        this.statuses[name] = status;
+        if (name) {
+            this.statuses[name] = status;
+        }
     }
 
 
@@ -37,26 +41,26 @@ class UsersOnline {
         return this.users
     }
 
-    createNewRoom(roomName){
+    createNewRoom(roomName) {
         this.rooms[roomName] = { users: {} }
     }
 
-    joinRoom(sid,roomName){
+    joinRoom(sid, roomName) {
         this.rooms[roomName].users[sid] = this.getUserName(sid);
     }
 
-    deleteFromRoom(socket){
+    deleteFromRoom(socket) {
         this._getUsersFroomRooms(socket.id).forEach(room => {
             socket.to(room).broadcast.emit('user-disconnected', this.rooms[room].users[socket.id])
             socket.to(room).emit('message', this.getUserName(socket.id) + " left the game... shame on him..", true);
             delete this.rooms[room].users[socket.id];
-          })
+        })
     }
 
     _getUsersFroomRooms(sid) {
         return Object.entries(this.rooms).reduce((names, [name, room]) => {
-          if (room.users[sid] != null) names.push(name)
-          return names
+            if (room.users[sid] != null) names.push(name)
+            return names
         }, [])
     }
 
