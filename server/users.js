@@ -18,8 +18,8 @@ class UsersOnline {
     }
 
     deleteUser(sid) {
+        delete this.statuses[this.users[sid]]; 
         delete this.users[sid];
-        delete this.statuses[this.users[sid]];
     }
 
     setStatusBySid(sid, status) {

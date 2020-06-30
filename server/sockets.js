@@ -14,6 +14,8 @@ module.exports = function (io, app) {
             usersOnline.newUserOnline(socket.id, app.locals.username)
             //обновляем список юзеров и их статусы
             io.sockets.emit('users-update', usersOnline.getUsersAndStatuses());
+            console.log("usersOnline.getUsersAndSids()", usersOnline.getUsersAndSids())
+            console.log("usersOnline.getUsersAndStatuses()", usersOnline.getUsersAndStatuses())
 
 
             // перенаправляем приглос
@@ -81,7 +83,6 @@ module.exports = function (io, app) {
                 usersOnline.deleteUser(socket.id);
                 //оповещаем о логауте
                 socket.broadcast.emit('users-update', usersOnline.getUsersAndStatuses());
-
             });
 
         }
