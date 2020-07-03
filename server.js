@@ -46,7 +46,7 @@ server.on('error', (err) => {
   console.log('Server error', err)
 })
 
-server.listen(8080, () => {
+server.listen(process.env.PORT || 8080, () => {
   console.log('started on 8080')
 })
 
