@@ -1,9 +1,9 @@
-<div id="game" hidden>
+<div id="game" v-if='app.gameOn' v-cloak>
     <div class="main">
         <div class='row' v-if='winnerWindow == "hidden"'>
-            <div class='row-33'>{{user}}</div>
+            <div class='row-33'>{{app.user}}</div>
             <div class='row-33'>{{scores.join(' : ')}}</div>
-            <div class='row-33'>{{opponent}}</div>
+            <div class='row-33'>{{app.opponent}}</div>
         </div>
         <div class='row' v-if='winnerWindow == "hidden"'>
             <div class='row-33'><img v-if='turnClass=="disabled"' v-bind='{src: "img/" + turnID + ".png"}'  v-bind='{alt: turnID}' height="150px" width='150px' ><span v-else>{{turnSpan}}</span></div>

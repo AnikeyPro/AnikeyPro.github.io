@@ -1,35 +1,41 @@
 <%- include('header'); -%>
 
 <body>
-  <div id='app'>
-    <transition name="slide-fade">
-      <form action="/room" name='toRoom' id="toRoom" method="POST">
-        <div class="invitation" v-if='showInv' v-cloak>
-          <span>{{ opponent }} has challenged you to a duel!</span>
-          <button type="button" id='accept' @click='startGame'>Accept</button>
-          <button type="button" id='decline' @click='declineInv'>Decline</button>
-        </div>
-      </form>
-    </transition>
+  <div id='app' v-cloak>
+    <div class="invitation" v-if='showInv' >
+      <span>{{ app.opponent }} has challenged you to a duel! {{showInvTimer}}s</span>
+      <button type="button" id='accept' @click='startGame'>Accept</button>
+      <button type="button" id='decline' @click='declineInv'>Decline</button>
+    </div>
     <div class="wrapper" v-if='!gameOn'>
       <h1>Greetings, <span id='username'><%=username %></span>!</h1>
-      <div id="content"></div>
-      <ul><b> Players Online : </b>
-        <li v-for="(status, userOnline) in usersOnline" v-cloak v-if='user!=userOnline' ><span v-bind:class="'status-' + status">{{status}} </span><b>{{ userOnline }}</b><span @click="sendInv(userOnline)" id='target' v-if='status == "ready"'> PvP</span></li>
-      </ul>
-      <form class='formDef' action="/logout?_method=DELETE" method="POST">
-        <button class= 'logout-button' type="submit">Log Out</button>
-      </form>
+      <div id="content">
+        <ul><b> Players Online : </b>
+          <li v-for="(status, userOnline) in usersOnline" v-cloak v-if='user!=userOnline'>
+            <span v-bind:class="'status-' + status">{{status}} </span>
+            <b>{{ userOnline }}</b>
+            <span @click="sendInv(userOnline)" id='target' v-if='status == "ready"'>PvP</span>
+          </li>
+        </ul>
+        <form class='formDef' action="/logout?_method=DELETE" method="POST">
+          <button class='logout-button' type="submit">Log Out</button>
+        </form>
+      </div>
     </div>
-
-    <%- include('room'); -%>
+    <transition name="fade">
+      <span id='errorMsg' v-if='showErr'>{{errMessage}}</span>
+    </transition>
   </div>
+  <%- include('game'); -%>
 </body>
-<script src="/socket.io/socket.io.js"></script>
+
+
+<script src="/socket.io/socket.io.js" ></script>
+<script src="/src/main.js" ></script>
+<script src="/src/game.js" ></script>
+<script src="/src/sockets.js" ></script>
 <script>
-  const userName = '<%= username %>';
+  app.user = '<%= username %>';
 </script>
-<script src="scripts/client.js"></script>
-<script src="scripts/sockets.js"></script>
 
 </html>

@@ -14,10 +14,7 @@ module.exports = function (io, app) {
             usersOnline.newUserOnline(socket.id, app.locals.username)
             //обновляем список юзеров и их статусы
             io.sockets.emit('users-update', usersOnline.getUsersAndStatuses());
-            console.log("usersOnline.getUsersAndSids()", usersOnline.getUsersAndSids())
-            console.log("usersOnline.getUsersAndStatuses()", usersOnline.getUsersAndStatuses())
-
-
+            
             // перенаправляем приглос
             socket.on('send-request', (players) => {
                 if (players.from === usersOnline.getUserName(socket.id)) {

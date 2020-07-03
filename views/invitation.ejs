@@ -1,0 +1,9 @@
+<div id="invitation">
+<transition name="slide-fade">
+      <div class="invitation" v-if='showInv' v-cloak>
+        <span>{{ opponent }} has challenged you to a duel!</span>
+        <button type="button" id='accept' @click='startGame'>Accept</button>
+        <button type="button" id='decline' @click='declineInv'>Decline</button>
+      </div>
+</transition>
+</div>

@@ -52,7 +52,6 @@ class UsersOnline {
     deleteFromRoom(socket) {
         this._getUsersFroomRooms(socket.id).forEach(room => {
             socket.to(room).broadcast.emit('user-disconnected', this.rooms[room].users[socket.id])
-            socket.to(room).emit('message', this.getUserName(socket.id) + " left the game... shame on him..", true);
             delete this.rooms[room].users[socket.id];
         })
     }

@@ -2,7 +2,7 @@
 
 <body>
   <div class="wrapper">
-    <span class="registered" ></span>
+    <span id="registered"  class="registered" hidden></span>
     <h1>Login</h1>
     <span class="error"><% if (messages.error) { %>
     <%= messages.error %>
@@ -24,7 +24,6 @@
 <script>
     var tmp = [];
     var result = '';
-    $('.registered').hide();
     window.location.search.substr(1).split("&")
         .forEach(function (item) {
           tmp = item.split("=");
@@ -32,8 +31,8 @@
               result = true;
         });
     if(result){
-      
-      $('.registered').show();
-      $('.registered').text('Registration succesfull. You can now log in!');
+      var span = document.getElementById('registered');
+      span.removeAttribute("hidden");
+      span.innerHTML = 'Registration succesfull. You can now log in!';
     }
 </script>
