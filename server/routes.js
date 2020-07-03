@@ -14,7 +14,7 @@ module.exports = function (app,db) {
   app.use(flash());
   app.use(session({
     store: new SQLiteStore({ dir: './db/', db: 'sessions.db' }),
-    secret: process.env.SESSION_SECRET,
+    secret: process.env["SESSION_SECRET"],
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 60 * 60 * 1000 }
