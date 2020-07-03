@@ -34,14 +34,15 @@ const app = new Vue({
             this.showInvTimer = 20;
             let interval = setInterval(() => {
                 this.showInvTimer--;
-                if (this.gameOn) {
+                if (!this.showInv) {
+                    this.showInvTimer = 20;
                     clearInterval(interval);
                 } else if (this.showInvTimer == 0) {
+                    this.showInvTimer = 20;
                     this.declineInv();
                     clearInterval(interval);
                 }
             }, 1000);
-            this.showInvTimer = 20;
         },
         declineInv: function () {
             this.showInv = false;
