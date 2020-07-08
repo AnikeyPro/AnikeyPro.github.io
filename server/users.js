@@ -17,6 +17,11 @@ class UsersOnline {
         return this.users[sid]
     }
 
+    getSidByName(name) {
+        return Object.keys(this.users).find(sid => this.users[sid] === name);
+    }
+
+
     deleteUser(sid) {
         delete this.statuses[this.users[sid]]; 
         delete this.users[sid];
@@ -30,6 +35,10 @@ class UsersOnline {
         if (name) {
             this.statuses[name] = status;
         }
+    }
+
+    getStatusByName(name) {
+        return this.statuses[name]
     }
 
 

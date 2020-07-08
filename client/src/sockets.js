@@ -7,18 +7,33 @@ socket.on('users-update', (usersOnline) => {
     app.selfStatus = usersOnline[app.user];
 });
 
+//проверяем если юзер вышел во время пргиглашение
 socket.on('users-left-chek', (opp) => {
-    if (app.opponent = opp){
-        socket.emit('left-and-ready');
+    if (app.opponent === opp) {
+        app.opponentOnline = false;
+        if (!app.showInv) {
+            socket.emit('left-and-ready');
+            app.sendErrMessage("Your opponent left or refused to play..");
+        } else{
+            app.sendErrMessage("Your opponent left or refused to play..");
+            clearInterval(app.interval);
+            app.showInvTimer = 20;
+            app.declineInv();
+        }
+        app.opponent = null;
     }
+});
+
+//если отменил пргиглашение
+socket.on('declined', () => {
+    app.sendErrMessage("Your opponent refused to play..");
+    app.opponent = null;
 });
 
 //получаем приглашение
 socket.on('invitation', (players) => {
-    console.log("players", players)
-
-    app.opponent = players.from;
     if (players.to === app.user) {
+        app.opponent = players.from;
         app.createInvitation(players.from);
     }
 });

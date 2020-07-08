@@ -34,6 +34,7 @@ const game = new Vue({
             this.turnOponentID = null;
             this.turnSpanOpponent = 'Thinking..';
             this.turnSpan = 'Make your choice!';
+            app.opponent = null;
         },
         sendToChat: function (e) {
             e.preventDefault();

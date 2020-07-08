@@ -10,11 +10,13 @@ module.exports = function (io, app) {
     let player2 = null;
 
     io.on('connection', (socket) => {
+        console.log("socket coonected: ", socket.id)
         if (app.locals.username) {
+            console.log("user coonected: ", app.locals.username)
             usersOnline.newUserOnline(socket.id, app.locals.username)
             //обновляем список юзеров и их статусы
             io.sockets.emit('users-update', usersOnline.getUsersAndStatuses());
-            
+
             // перенаправляем приглос
             socket.on('send-request', (players) => {
                 if (players.from === usersOnline.getUserName(socket.id)) {
@@ -23,7 +25,6 @@ module.exports = function (io, app) {
                     usersOnline.setStatusByName(players.to, 'busy');
                 }
                 io.sockets.emit('users-update', usersOnline.getUsersAndStatuses());
-
             });
 
             //если согласился->создаем комнату для игры
@@ -65,8 +66,10 @@ module.exports = function (io, app) {
             //если вышел из игровой комнты и свободен к новым приглашениям
             socket.on('left-and-ready', (opp = null) => {
                 usersOnline.setStatusBySid(socket.id, 'ready')
-                if (opp!=null){
-                    usersOnline.setStatusByName(opp, 'ready')
+                if (opp != null && usersOnline.getStatusByName(opp)) {
+                    usersOnline.setStatusByName(opp, 'ready');
+                    let oppSID = usersOnline.getSidByName(opp);
+                    socket.to(oppSID).emit('declined');
                 }
                 io.sockets.emit('users-update', usersOnline.getUsersAndStatuses());
                 //покидаем комнату
