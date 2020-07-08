@@ -65,7 +65,9 @@ module.exports = function (io, app) {
             //если вышел из игровой комнты и свободен к новым приглашениям
             socket.on('left-and-ready', (opp = null) => {
                 usersOnline.setStatusBySid(socket.id, 'ready')
-                usersOnline.setStatusByName(opp, 'ready')
+                if (opp!=null){
+                    usersOnline.setStatusByName(opp, 'ready')
+                }
                 io.sockets.emit('users-update', usersOnline.getUsersAndStatuses());
                 //покидаем комнату
                 usersOnline.deleteFromRoom(socket);
@@ -74,6 +76,7 @@ module.exports = function (io, app) {
             //логаут - убираем из списка онлайн 
             socket.on('disconnect', (reason) => {
                 console.log(socket.id + ' disconnected! Reason: ' + reason);
+                io.sockets.emit('users-left-chek', usersOnline.getUserName(socket.id));
                 //Выходим из комнаты
                 usersOnline.deleteFromRoom(socket);
                 //удаляем из онлайна

@@ -7,6 +7,12 @@ socket.on('users-update', (usersOnline) => {
     app.selfStatus = usersOnline[app.user];
 });
 
+socket.on('users-left-chek', (opp) => {
+    if (app.opponent = opp){
+        socket.emit('left-and-ready');
+    }
+});
+
 //получаем приглашение
 socket.on('invitation', (players) => {
     console.log("players", players)
