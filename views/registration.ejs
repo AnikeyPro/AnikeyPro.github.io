@@ -2,11 +2,12 @@
 
 <body>
   <div class="wrapper">
+    <span id="registered" class="registered" hidden></span>
     <h1>Register</h1>
     <form action="/register" method="POST" class='formDef'>
       <div>
         <label for="username">Username</label>
-        <input type="text" id="username" name="username" required>
+        <input type="text" id="username" name="username"  required >
       </div>
       <!-- <div>
     <label for="email">Email</label>
@@ -22,3 +23,23 @@
   </div>
 
 </body>
+<script>
+  var tmp = [];
+  var span = document.getElementById('registered');
+  window.location.search.substr(1).split("&")
+    .forEach(function (item) {
+      tmp = item.split("=");
+      switch (tmp[0]) {
+        case 'exist':
+          span.removeAttribute("hidden");
+          span.innerHTML = 'Username already exist!';
+          break;
+        case 'err':
+          span.removeAttribute("hidden");
+          span.innerHTML = 'Some tech error, try later!';
+          break;
+        default:
+          break;
+      }
+    });
+</script>

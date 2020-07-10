@@ -1,4 +1,4 @@
-module.exports = function (app,db) {
+module.exports = function (app, db) {
   const flash = require('express-flash');
   const session = require('express-session');
   const SQLiteStore = require('connect-sqlite3')(session);
@@ -23,8 +23,9 @@ module.exports = function (app,db) {
   app.use(passport.session());
 
   app.get('/', checkAuthenticated, (req, res) => {
-    res.render('index.ejs', { username: req.user.username });
-    app.locals.username = req.user.username;
+    let uppedName = req.user.username[0].toUpperCase() + req.user.username.substring(1);
+    res.render('index.ejs', { username: uppedName });
+    app.locals.username = uppedName;
   });
 
   app.get('/login', checkNotAuthenticated, (req, res) => {
@@ -42,14 +43,24 @@ module.exports = function (app,db) {
   });
 
   app.post('/register', checkNotAuthenticated, async (req, res) => {
-    try {
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      const clearUsername = cleanseString(req.body.username);
-      db.run(`INSERT INTO Users (username, password) VALUES ("${clearUsername}","${hashedPassword}")`);
-      res.redirect('/login?registered');
-    } catch  {
-      res.redirect('/register');
-    }
+    var clearUsername = cleanseString(req.body.username);
+    const hashedPassword = await hashedPass(req.body.password);
+    db.get(`SELECT username FROM Users WHERE username = "${clearUsername.toLowerCase()}"`, (err, row) => {
+      if (err) {
+        return console.error(err.message);
+      }
+      if (row) {
+        res.redirect('/register?exist');
+      } else {
+        try {
+          db.run(`INSERT INTO Users (username, password) VALUES ("${clearUsername.toLowerCase()}","${hashedPassword}")`);
+          res.redirect('/login?registered');
+        } catch  (err){
+          console.log(err);
+          res.redirect('/register?err');
+        }
+      }
+    });
   });
 
   app.delete('/logout', (req, res) => {
@@ -79,5 +90,12 @@ module.exports = function (app,db) {
     return string.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   };
 
+  const hashedPass = async function (password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
 
+
+    return hashedPassword
+
+    
+  }
 }

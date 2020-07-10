@@ -3,8 +3,7 @@ const bcrypt = require('bcrypt');
 
 function initialize(passport, db) {
   passport.use(new LocalStrategy(async function (username, password, done) {
-
-    db.get('SELECT username, id, password FROM users WHERE username = ? ', username, async function (err, row) {
+    db.get('SELECT username, id, password FROM users WHERE username = ? ', username.toLowerCase(), async function (err, row) {
       if (!row) {
         return done(null, false, { message: 'Username does not exist.' });
       }
